@@ -1,0 +1,25 @@
+{
+  "name": "alms-rs (Rust)",
+  "dockerComposeFile": ["../alm/docker-compose.yml"],
+  "service": "backend",
+  "workspaceFolder": "/workspace/alm",
+  "workspaceMount": "source=${localWorkspaceFolder}/alm,target=/workspace/alm,consistency=cached",
+  "runServices": ["postgres", "backend"],
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "serayuzgur.crates",
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "bash"
+  },
+  "postCreateCommand": "rustup component add rustfmt clippy && cargo build --workspace",
+  "remoteUser": "vscode",
+  "forwardPorts": [8000, 5432]
+}

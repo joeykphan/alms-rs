@@ -25,5 +25,16 @@ services:
     depends_on:
       - postgres
 
-  # volumes:
-  #   postgres_data:
+  # Example frontend service (uncomment & adjust when your frontend is ready)
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
+  #   environment:
+  #     REACT_APP_API_URL: http://backend:8000
+
+volumes:
+  postgres_data:
