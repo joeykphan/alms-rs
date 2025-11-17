@@ -1,25 +1,92 @@
 {
-  "name": "alms-rs (Rust)",
-  "dockerComposeFile": ["../alm/docker-compose.yml"],
-  "service": "backend",
-  "workspaceFolder": "/workspace/alm",
-  "workspaceMount": "source=${localWorkspaceFolder}/alm,target=/workspace/alm,consistency=cached",
-  "runServices": ["postgres", "backend"],
-  "shutdownAction": "stopCompose",
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "rust-lang.rust-analyzer",
-        "serayuzgur.crates",
-        "eamodio.gitlens",
-        "ms-azuretools.vscode-docker"
-      ]
+    "name": "alm",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "rust-lang.rust-analyzer",
+                "vadimcn.vscode-lldb",
+                "serayuzgur.crates",
+                "tamasfe.even-better-toml",
+                "ms-azuretools.vscode-docker",
+                "mtxr.sqltools",
+                "mtxr.sqltools-driver-pg",
+                "github.copilot",
+                "eamodio.gitlens"
+            ],
+            "settings": {
+                "rust-analyzer.checkOnSave.command": "clippy",
+                "rust-analyzer.cargo.features": "all",
+                "rust-analyzer.server.extraEnv": {
+                    "CARGO_TARGET_DIR": "/workspace/target"
+                },
+                "editor.formatOnSave": true,
+                "editor.defaultFormatter": "rust-lang.rust-analyzer",
+                "[rust]": {
+                    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+                    "editor.tabSize": 4
+                },
+                "[toml]": {
+                    "editor.defaultFormatter": "tamasfe.even-better-toml"
+                },
+                "files.watcherExclude": {
+                    "**/target/**": true
+                },
+                "sqltools.connections": [
+                    {
+                        "name": "PostgreSQL - Dev",
+                        "driver": "PostgreSQL",
+                        "previewLimit": 50,
+                        "server": "postgres",
+                        "port": 5432,
+                        "database": "alm",
+                        "username": "postgres",
+                        "password": "password"
+                    },
+                    {
+                        "name": "PostgreSQL - Test",
+                        "driver": "PostgreSQL",
+                        "previewLimit": 50,
+                        "server": "postgres",
+                        "port": 5432,
+                        "database": "alm_test",
+                        "username": "postgres",
+                        "password": "password"
+                    }
+                ],
+                "terminal.integrated.defaultProfile.linux": "bash"
+            }
+        }
+    },
+    "forwardPorts": [
+        8000,
+        5432
+    ],
+    "portsAttributes": {
+        "8000": {
+            "label": "alm",
+            "onAutoForward": "notify"
+        },
+        "5432": {
+            "label": "psql"
+        }
+    },
+    "postCreateCommand": "bash .devcontainer/post-create.sh",
+    "postStartCommand": "bash .devcontainer/post-start.sh",
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "remoteUser": "vscode",
+    "containerEnv": {
+        "DATABASE_URL": "postgresql://postgres:password@postgres:5432/alm",
+        "DATABASE_TEST_URL": "postgresql://postgres:password@postgres:5432/alm_test",
+        "JWT_SECRET": "dev_jwt_secret_key_change_in_production",
+        "PLAID_CLIENT_ID": "${localEnv:PLAID_CLIENT_ID}",
+        "PLAID_SECRET": "${localEnv:PLAID_SECRET}",
+        "PLAID_ENV": "sandbox",
+        "RUST_LOG": "info,alm=debug"
     }
-  },
-  "settings": {
-    "terminal.integrated.defaultProfile.linux": "bash"
-  },
-  "postCreateCommand": "rustup component add rustfmt clippy && cargo build --workspace",
-  "remoteUser": "vscode",
-  "forwardPorts": [8000, 5432]
 }

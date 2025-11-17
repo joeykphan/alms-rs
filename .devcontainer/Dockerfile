@@ -1,17 +1,38 @@
-FROM mcr.microsoft.com/devcontainers/rust:1
+FROM mcr.microsoft.com/devcontainers/rust:1-bullseye
 
-# Install system packages required for Postgres/Diesel builds
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends \
+    postgresql-client \
     libpq-dev \
     pkg-config \
     libssl-dev \
-    ca-certificates \
     build-essential \
     curl \
+    git \
+    vim \
+    less \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install diesel_cli for migrations (Postgres feature)
-RUN cargo install diesel_cli --no-default-features --features postgres || true
+RUN rustup component add rustfmt clippy rust-src
 
-USER vscode
+RUN cargo install cargo-watch \
+    && cargo install sqlx-cli --no-default-features --features rustls,postgres
+
+RUN if [ "$USER_GID" != "1000" ] || [ "$USER_UID" != "1000" ]; then \
+    groupmod --gid $USER_GID $USERNAME \
+    && usermod --uid $USER_UID --gid $USER_GID $USERNAME \
+    && chown -R $USER_UID:$USER_GID /home/$USERNAME; \
+    fi
+
+USER $USERNAME
+
+ENV CARGO_HOME=/usr/local/cargo
+ENV RUSTUP_HOME=/usr/local/rustup
+ENV PATH=${CARGO_HOME}/bin:${PATH}
+
+WORKDIR /workspace
