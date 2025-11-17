@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   app:
@@ -8,7 +8,8 @@ services:
     volumes:
       - ../:/workspace:cached
       - cargo-cache:/usr/local/cargo/registry
-      - target-cache:/workspace/target
+      - cargo-git-cache:/usr/local/cargo/git
+      - target-cache:/workspace/alm/target
     command: sleep infinity
     environment:
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/alm
@@ -18,11 +19,13 @@ services:
       - PLAID_SECRET=${PLAID_SECRET}
       - PLAID_ENV=sandbox
       - RUST_LOG=info,finance_backend=debug
+      - CARGO_HOME=/usr/local/cargo
     networks:
       - finance-network
     depends_on:
       postgres:
         condition: service_healthy
+    user: vscode
 
   postgres:
     image: postgres:15-alpine
@@ -45,6 +48,7 @@ services:
 volumes:
   postgres-data:
   cargo-cache:
+  cargo-git-cache:
   target-cache:
 
 networks:
